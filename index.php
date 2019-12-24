@@ -1,6 +1,6 @@
 ﻿<html>
 	<head>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<script src="./assets/js/jquery.min.js"></script>
 		<style>
 			body {
 				background:url('./assets/img/background.jpg');
@@ -19,6 +19,11 @@
 			.separador {
 				display:block;
 				text-align:center;
+				margin:15px 10px 5px 10px;
+			}
+			.usuario {
+				color:purple;
+				font-weight:bold;
 			}
 			.mensagem {
 				padding: 5px 5px 5px 5px;
@@ -33,7 +38,6 @@
 			}
 			.azul {
 				background:#5DBCD2;
-				margin:15px 10px 5px 10px;
 				padding: 5px 5px 5px 5px;
 			}
 		</style>
@@ -48,7 +52,10 @@
 					</td>
 					
 					<td width="70%">
-						<div id="conteudo"></div>
+						<div id="conteudo">
+							<div class="separador"><span class="azul">Coloque os arquivos exportados na pasta "conversas"</div>
+							<div class="separador"><span class="azul">Os mesmos serão listados no lado esquerdo &laquo;</div>
+						</div>
 						<div style="text-align:center;">
 							<button id="carregarMais" onclick="carregarMais()" style="display:none;">Carregar Mais</button>
 						</div>
@@ -60,6 +67,8 @@
 	
 	<script>
 		var historico = {};
+		var regexMensagem = new RegExp(/(?=^(\d{1,2}\/\d{1,2}\/\d{2}),\s(\d{1,2}:\d{2}\s[AP]M)\s-\s([^\:]+):\s([^\n]+))/m);
+		var regexNotificacao = new RegExp(/(?=^(\d{1,2}\/\d{1,2}\/\d{2}),\s(\d{1,2}:\d{2}\s[AP]M)\s-\s([^\n]+))/m);
 		
 		function selecionarConversa(arquivo) {
 			// Setar valores padrões
@@ -140,12 +149,7 @@
 		}
 		
 		function renderizarMensagem(mensagem) {
-			var random = Math.floor(Math.random() * 100);
-			
-			//(?=^\d{1,2}\/\d{1,2}\/\d{2},\s\d{1,2}:\d{2}\s[AP]M)
-			var regex = new RegExp(/(?=^(\d{1,2}\/\d{1,2}\/\d{2}),\s(\d{1,2}:\d{2}\s[AP]M)\s-\s([^\:]+):\s([^\n]+))/m);
-			var matches = regex.exec(mensagem);
-			
+			var matches = regexMensagem.exec(mensagem);
 			if ((matches)) {
 				var conteudo = '';
 				matches[4] = matches[4].trim();
@@ -158,12 +162,19 @@
 				
 				// Insere a nova mensagem
 				var style = getStylePeloParticipante(matches[3]);
-				conteudo += '<div class="mensagem ' + style + '">' + matches[4] + '</div>';
+				conteudo += '<div class="mensagem ' + style + '"><div class="usuario">' + matches[3] + '</div>' + matches[4] + '</div>';
 				$("#conteudo").html($("#conteudo").html() + conteudo);
 			}
 			else {
-				var last = $('#conteudo').children().last();
-				if ((last)) last.html(last.html() + '<br />' + mensagem);
+				matches = regexNotificacao.exec(mensagem);
+				if ((matches)) {
+					var conteudo = '<div class="separador"><span class="azul">' + matches[3] + '</div>';
+					$("#conteudo").html($("#conteudo").html() + conteudo);
+				}
+				else {
+					var last = $('#conteudo').children().last();
+					if ((last)) last.html(last.html() + '<br />' + mensagem);
+				}
 			}
 		}
 		
